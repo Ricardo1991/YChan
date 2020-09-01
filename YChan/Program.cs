@@ -91,7 +91,7 @@ namespace YChan
 
                 try
                 {
-                    MainFrame = new frmMain();
+                    MainFrame = new frmMain(args);
                     Application.Run(MainFrame);
                 }
                 catch

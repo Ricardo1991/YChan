@@ -38,12 +38,15 @@ namespace YChan
         private object threadLock = new object();
         private object boardLock = new object();
 
+        private string[] startupArgs;
+
         private enum typeURL
         { thread, board };
 
-        public frmMain()
+        public frmMain(string[] args)
         {
             InitializeComponent();
+            startupArgs = args;
         }
 
         private void frmMain_Load(object sender, EventArgs e)
@@ -97,6 +100,8 @@ namespace YChan
                 lbBoards.DataSource = ListBoards;
                 lbThreads.DataSource = ListThreads;
 
+                AddUrlFromArgs(startupArgs);                                    // Load urls sent via arguments
+
                 scnTimer.Enabled = true;                                        // activate the timer
                 scan(this, new EventArgs());                                    // and start scanning
             }
@@ -124,6 +129,14 @@ namespace YChan
             }
 
             return true;
+        }
+
+        private void AddUrlFromArgs(string[] args)
+        {
+            foreach (string possibleUrl in args)
+            {
+                AddUrl(possibleUrl.Trim());
+            }
         }
 
         private void AddUrl(string url)
