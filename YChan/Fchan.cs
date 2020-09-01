@@ -221,7 +221,7 @@ namespace YChan
                     htmlPage = htmlPage.Replace(imageURL2, imageFileName);
 
                     //Save thumbs for files that need it
-                    if (imageFileName == ".webm" /*|| rep.Split('.')[1] == ""*/)
+                    if (xmlImageFileExtension[i].InnerText == ".webm" /*|| xmlImageFileExtension[i].InnerText == ""*/)
                     {
                         string imageURL = "//t.4cdn.org/" + boardNameSplit + "/" + xmlImageFileName[i].InnerText + "s.jpg";
                         thumbs.Add("http:" + imageURL);
@@ -232,7 +232,7 @@ namespace YChan
                     else
                     {
                         string thumbName = imageFileName.Split('.')[0] + "s";
-                        htmlPage = htmlPage.Replace(thumbName + ".jpg", imageFileName.Split('.')[0] + "." + imageFileName.Split('.')[1]);
+                        htmlPage = htmlPage.Replace(thumbName + ".jpg", imageFileName);
                         htmlPage = htmlPage.Replace("/" + thumbName, thumbName);
 
                         htmlPage = htmlPage.Replace(baseURL1 + xmlImageFileName[i].InnerText, xmlImageFileName[i].InnerText);
