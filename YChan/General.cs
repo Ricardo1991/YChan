@@ -119,7 +119,7 @@ namespace YChan
         private static string GetFileName(string hrefLink)
         {
             string[] parts = hrefLink.Split('/');
-            string fileName = "";
+            string fileName;
 
             if (parts.Length > 0)
                 fileName = parts[parts.Length - 1];
@@ -145,10 +145,9 @@ namespace YChan
                 }
                 return true;
             }
-            catch (WebException WebE)
+            catch
             {
                 return false;
-                throw WebE;
             }
         }
     }

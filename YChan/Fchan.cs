@@ -67,8 +67,12 @@ namespace YChan
         override protected string[] getLinks()
         {
             List<string> links = new List<string>();
-            string JSONUrl = "http://a.4cdn.org/" + getURL().Split('/')[3] + "/thread/" + getURL().Split('/')[5] + ".json";
-            string baseURL = "http://i.4cdn.org/" + getURL().Split('/')[3] + "/";
+
+            string boardNameSplit = getURL().Split('/')[3];
+            string threadNumberSplit = getURL().Split('/')[5];
+
+            string JSONUrl = "http://a.4cdn.org/" + boardNameSplit + "/thread/" + threadNumberSplit + ".json";
+            string baseURL = "http://i.4cdn.org/" + boardNameSplit + "/";
             string str = "";
             XmlNodeList xmlTim;
             XmlNodeList xmlExt;
@@ -87,7 +91,7 @@ namespace YChan
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(str);
-                if (getURL().Split('/')[3] == "f")
+                if (boardNameSplit == "f")
                     xmlTim = doc.DocumentElement.SelectNodes("/root/posts/item/filename");
                 else
                     xmlTim = doc.DocumentElement.SelectNodes("/root/posts/item/tim");
@@ -112,6 +116,9 @@ namespace YChan
             string str = "";
             XmlNodeList tNa;
             XmlNodeList tNo;
+
+            string boardNameSplit = getURL().Split('/')[3];
+
             try
             {
                 string json = new WebClient().DownloadString(URL);
@@ -130,7 +137,7 @@ namespace YChan
                 tNa = doc.DocumentElement.SelectNodes("/root/item/threads/item/semantic_url");
                 for (int i = 0; i < tNo.Count; i++)
                 {
-                    Res.Add("http://boards.4chan.org/" + getURL().Split('/')[3] + "/thread/" + tNo[i].InnerText + "/" + tNa[i].InnerText);
+                    Res.Add("http://boards.4chan.org/" + boardNameSplit + "/thread/" + tNo[i].InnerText + "/" + tNa[i].InnerText);
                 }
             }
             catch (WebException webEx)
@@ -172,10 +179,13 @@ namespace YChan
         private void downloadHTMLPage()
         {
             List<string> thumbs = new List<string>();
-            string htmlPage = "";
-            string str = "";
-            string baseURL = "//i.4cdn.org/" + getURL().Split('/')[3] + "/";
-            string JURL = "http://a.4cdn.org/" + getURL().Split('/')[3] + "/thread/" + getURL().Split('/')[5] + ".json";
+            string xmlString;
+            string boardNameSplit = getURL().Split('/')[3];
+            string threadNumberSplit = getURL().Split('/')[5];
+            string baseURL1 = "//i.4cdn.org/" + boardNameSplit + "/";
+            string baseURL2 = "//is2.4chan.org/" + boardNameSplit + "/";
+            string JURL = "http://a.4cdn.org/" + boardNameSplit + "/thread/" + threadNumberSplit + ".json";
+            XmlDocument doc = new XmlDocument();
 
             try
             {
@@ -183,7 +193,7 @@ namespace YChan
                 WebClient web = new WebClient();
                 web.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0";
 
-                htmlPage = web.DownloadString(this.getURL());
+                string htmlPage = web.DownloadString(this.getURL());
 
                 //Prevent the html from being destroyed by the anti adblock script
                 htmlPage = htmlPage.Replace("f=\"to\"", "f=\"penis\"");
@@ -194,28 +204,30 @@ namespace YChan
                 {
                     var quotas = new XmlDictionaryReaderQuotas();
                     var jsonReader = JsonReaderWriterFactory.CreateJsonReader(stream, quotas);
-                    var xml = XDocument.Load(jsonReader);
-                    str = xml.ToString();
+                    xmlString = XDocument.Load(jsonReader).ToString();
                 }
 
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(str);
+                doc.LoadXml(xmlString);
                 XmlNodeList xmlImageFileName = doc.DocumentElement.SelectNodes("/root/posts/item/tim");
                 XmlNodeList xmlImageFileExtension = doc.DocumentElement.SelectNodes("/root/posts/item/ext");
 
                 for (int i = 0; i < xmlImageFileExtension.Count; i++)
                 {
-                    string imageURL = baseURL + xmlImageFileName[i].InnerText + xmlImageFileExtension[i].InnerText;
                     string imageFileName = xmlImageFileName[i].InnerText + xmlImageFileExtension[i].InnerText;
-                    htmlPage = htmlPage.Replace(imageURL, imageFileName);
+                    string imageURL1 = baseURL1 + imageFileName;
+                    string imageURL2 = baseURL2 + imageFileName;
+
+                    htmlPage = htmlPage.Replace(imageURL1, imageFileName);
+                    htmlPage = htmlPage.Replace(imageURL2, imageFileName);
 
                     //Save thumbs for files that need it
                     if (imageFileName == ".webm" /*|| rep.Split('.')[1] == ""*/)
                     {
-                        imageURL = "//t.4cdn.org/" + getURL().Split('/')[3] + "/" + xmlImageFileName[i].InnerText + "s.jpg";
+                        string imageURL = "//t.4cdn.org/" + boardNameSplit + "/" + xmlImageFileName[i].InnerText + "s.jpg";
                         thumbs.Add("http:" + imageURL);
 
-                        htmlPage = htmlPage.Replace("//i.4cdn.org/" + getURL().Split('/')[3] + "/" + xmlImageFileName[i].InnerText, "thumb/" + xmlImageFileName[i].InnerText);
+                        htmlPage = htmlPage.Replace(baseURL1 + xmlImageFileName[i].InnerText, "thumb/" + xmlImageFileName[i].InnerText);
+                        htmlPage = htmlPage.Replace(baseURL2 + xmlImageFileName[i].InnerText, "thumb/" + xmlImageFileName[i].InnerText);
                     }
                     else
                     {
@@ -223,10 +235,8 @@ namespace YChan
                         htmlPage = htmlPage.Replace(thumbName + ".jpg", imageFileName.Split('.')[0] + "." + imageFileName.Split('.')[1]);
                         htmlPage = htmlPage.Replace("/" + thumbName, thumbName);
 
-                        string boardNameSplit = getURL().Split('/')[3];
-
-                        htmlPage = htmlPage.Replace("//i.4cdn.org/" + boardNameSplit + "/" + xmlImageFileName[i].InnerText, xmlImageFileName[i].InnerText);
-                        htmlPage = htmlPage.Replace("//is2.4chan.org/" + boardNameSplit + "/" + xmlImageFileName[i].InnerText, xmlImageFileName[i].InnerText);
+                        htmlPage = htmlPage.Replace(baseURL1 + xmlImageFileName[i].InnerText, xmlImageFileName[i].InnerText);
+                        htmlPage = htmlPage.Replace(baseURL2 + xmlImageFileName[i].InnerText, xmlImageFileName[i].InnerText);
                     }
 
                     htmlPage = htmlPage.Replace("/" + imageFileName, imageFileName);
