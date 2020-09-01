@@ -200,33 +200,36 @@ namespace YChan
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(str);
-                XmlNodeList xmlTim = doc.DocumentElement.SelectNodes("/root/posts/item/tim");
-                XmlNodeList xmlExt = doc.DocumentElement.SelectNodes("/root/posts/item/ext");
+                XmlNodeList xmlImageFileName = doc.DocumentElement.SelectNodes("/root/posts/item/tim");
+                XmlNodeList xmlImageFileExtension = doc.DocumentElement.SelectNodes("/root/posts/item/ext");
 
-                for (int i = 0; i < xmlExt.Count; i++)
+                for (int i = 0; i < xmlImageFileExtension.Count; i++)
                 {
-                    string old = baseURL + xmlTim[i].InnerText + xmlExt[i].InnerText;
-                    string rep = xmlTim[i].InnerText + xmlExt[i].InnerText;
-                    htmlPage = htmlPage.Replace(old, rep);
+                    string imageURL = baseURL + xmlImageFileName[i].InnerText + xmlImageFileExtension[i].InnerText;
+                    string imageFileName = xmlImageFileName[i].InnerText + xmlImageFileExtension[i].InnerText;
+                    htmlPage = htmlPage.Replace(imageURL, imageFileName);
 
                     //Save thumbs for files that need it
-                    if (rep.Split('.')[1] == "webm" /*|| rep.Split('.')[1] == ""*/)
+                    if (imageFileName == ".webm" /*|| rep.Split('.')[1] == ""*/)
                     {
-                        old = "//t.4cdn.org/" + getURL().Split('/')[3] + "/" + xmlTim[i].InnerText + "s.jpg";
-                        thumbs.Add("http:" + old);
+                        imageURL = "//t.4cdn.org/" + getURL().Split('/')[3] + "/" + xmlImageFileName[i].InnerText + "s.jpg";
+                        thumbs.Add("http:" + imageURL);
 
-                        htmlPage = htmlPage.Replace("//i.4cdn.org/" + getURL().Split('/')[3] + "/" + xmlTim[i].InnerText, "thumb/" + xmlTim[i].InnerText);
+                        htmlPage = htmlPage.Replace("//i.4cdn.org/" + getURL().Split('/')[3] + "/" + xmlImageFileName[i].InnerText, "thumb/" + xmlImageFileName[i].InnerText);
                     }
                     else
                     {
-                        string thumbName = rep.Split('.')[0] + "s";
-                        htmlPage = htmlPage.Replace(thumbName + ".jpg", rep.Split('.')[0] + "." + rep.Split('.')[1]);
+                        string thumbName = imageFileName.Split('.')[0] + "s";
+                        htmlPage = htmlPage.Replace(thumbName + ".jpg", imageFileName.Split('.')[0] + "." + imageFileName.Split('.')[1]);
                         htmlPage = htmlPage.Replace("/" + thumbName, thumbName);
 
-                        htmlPage = htmlPage.Replace("//i.4cdn.org/" + getURL().Split('/')[3] + "/" + xmlTim[i].InnerText, xmlTim[i].InnerText);
+                        string boardNameSplit = getURL().Split('/')[3];
+
+                        htmlPage = htmlPage.Replace("//i.4cdn.org/" + boardNameSplit + "/" + xmlImageFileName[i].InnerText, xmlImageFileName[i].InnerText);
+                        htmlPage = htmlPage.Replace("//is2.4chan.org/" + boardNameSplit + "/" + xmlImageFileName[i].InnerText, xmlImageFileName[i].InnerText);
                     }
 
-                    htmlPage = htmlPage.Replace("/" + rep, rep);
+                    htmlPage = htmlPage.Replace("/" + imageFileName, imageFileName);
                 }
 
                 htmlPage = htmlPage.Replace("=\"//", "=\"http://");
